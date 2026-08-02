@@ -51,7 +51,11 @@ reacticle          (npm package: components / themes / Raw / export)
 
 ## Install
 
-Copy this entire directory into your skills folder. Requires:
+```bash
+npx skills@latest add ChHsiching/paged-article-skill
+```
+
+Or clone manually and copy into your skills folder. Requires:
 - `playwright` (`npm i playwright`) in the run directory
 - `reacticle` (installed automatically by `scripts/scaffold.sh` via `npm install reacticle@latest`)
 
