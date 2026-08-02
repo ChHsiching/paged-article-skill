@@ -101,7 +101,7 @@ The page plan and theme are confirmed. Now write each page as standalone HTML an
 For each page, in order:
 
 1. **Write the HTML** (`pages/NN.html`): a complete standalone document with the theme's tokens inlined in `<style>`, Google Fonts `<link>`, and the page's content. Use the structural components:
-   - **Cover**: watermark (big low-opacity background text) + SVG hero visual + eyebrow tag + title + lead + meta row
+   - **Cover**: watermark (big low-opacity background text) + SVG hero visual + eyebrow tag + title + lead + meta row. The cover's visual hero follows **beautiful-article's cover design system** — see [`references/cover.md`](references/cover.md) for the 5 composition templates (A上字下图 / B大字盖图 / C分屏 / D拼贴 / E极简框) and the 5 hard constraints. The AI picks a composition template, invents a content-specific visual metaphor (the SVG), and layers the text — this is what produces the "出版物封面" quality, not a generic text-only cover.
    - **Chapter pages**: header (big chapter number + name + series) + h2 title + lead + prose paragraphs + SVG diagrams / compare tables / quote blocks / aside callouts as the content demands + footer (page number)
    - **Ending**: watermark + summary prose + note + END stamp
 2. **Write the SVG diagrams** by hand, using the theme's color tokens. A diagram earns its place when it explains a concept faster than prose (a metaphor, a process, a comparison). Not every page needs one — pure prose is the default.
