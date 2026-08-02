@@ -1,6 +1,6 @@
 ---
 name: paged-article
-description: Paged-article: 3:4 vertical Xiaohongshu pages (one chapter per page, rendered at 3x DPI) from any link, file, or pasted text. Use when the user wants to make 小红书图文/分页文章/竖屏图文笔记, mentions paged-article/分页文章, or asks to turn an article/post/video into shareable image pages.
+description: "Paged-article: 3:4 vertical Xiaohongshu pages (one chapter per page, rendered at 3x DPI) from any link, file, or pasted text. Use when the user wants to make 小红书图文/分页文章/竖屏图文笔记, mentions paged-article/分页文章, or asks to turn an article/post/video into shareable image pages."
 ---
 
 This skill is **beautiful-article + pagination**. Everything about how to write, design, theme, and structure the article comes from beautiful-article — unchanged, in full, in [`references/`](references/), [`theme-profiles/`](theme-profiles/), [`scripts/`](scripts/), and [`assets/scaffold-template/`](assets/scaffold-template/). This SKILL.md only adds what beautiful-article doesn't have: **splitting the article into 3:4 pages, one chapter per page, and rendering each to a 3x PNG.**
