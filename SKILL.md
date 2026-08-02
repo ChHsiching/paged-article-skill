@@ -1,154 +1,116 @@
 ---
 name: paged-article
-description: Turn a link, file, or pasted text into a set of 3:4 vertical pages — a beautiful-article-style essay split into swipeable pages for Xiaohongshu and similar platforms. Each page is one chapter, rendered as standalone HTML with a real theme's design tokens (serif/sans, colors, SVG diagrams), screenshotted at 3x to PNG. Use when the user wants to make 小红书图文/分页文章/竖屏图文笔记 from a URL or content, mentions paged-article/分页文章, or asks to turn an article/post/video into shareable image pages without the card-illustration style of article-illustration.
+description: Turn a link, file, or pasted text into a set of 3:4 vertical pages for Xiaohongshu — a beautiful-article-style essay, split one-chapter-per-page, each rendered as standalone HTML at 3x DPI. Use when the user wants to make 小红书图文/分页文章/竖屏图文笔记 from a URL or content, mentions paged-article/分页文章, or asks to turn an article/post/video into shareable image pages. This skill embeds beautiful-article in full (all references, theme-profiles, scripts, scaffold-template) and adds a pagination + render layer on top.
 ---
 
-Turn a **source** (URL, local file, pasted text, or image) into a set of **3:4 vertical pages** — a prose-first essay, split one-chapter-per-page, each rendered as standalone HTML with a real theme's design DNA, screenshotted at 3x to PNG. The agent does the writing, the layout, and the rendering. Output is ready to post: all page PNGs + a caption with title/body/hashtag options.
+This skill is **beautiful-article + pagination**. Everything about how to write, design, theme, and structure the article comes from beautiful-article — unchanged, in full, in [`references/`](references/), [`theme-profiles/`](theme-profiles/), [`scripts/`](scripts/), and [`assets/scaffold-template/`](assets/scaffold-template/). This SKILL.md only adds what beautiful-article doesn't have: **splitting the article into 3:4 pages, one chapter per page, and rendering each to a 3x PNG.**
 
-This is **beautiful-article's writing and design quality, delivered as paginated images**. The prose reads like an edited article (not card fragments or bullet dumps); the layout uses a real theme's color tokens, fonts, and structural discipline; SVG diagrams explain concepts where they earn their place. No AI-generated illustrations by default — visuals are hand-authored SVG and typography, zero image-API cost.
+Read [`SKILL.md.bak`](SKILL.md.bak) (beautiful-article's original SKILL.md) for the full editorial process (Phase 0–8). The steps below reference it by phase number.
 
 ## What you produce
 
-Every run produces all of these:
-
-1. `NN.png` — the pages: **cover + content chapters + ending**, in order, each 3240×4320 (3x of 1080×1440)
-2. `caption.md` — multiple title options (≤20 chars each, verified), multiple body options, hashtags, a sources block
-3. `source.md` — the fetched/normalized source content + a translation note if the source isn't Chinese
-4. `pages/NN.html` — the HTML source for each page (so the user can tweak and re-render)
-5. `render.mjs` — the 3x Playwright render script
-
-## Visual identity
-
-- **Pages are 3:4 vertical** (1080×1440 CSS canvas, rendered at 3x = 3240×4320 PNG).
-- **Prose-first**: body text is full subject-verb-object paragraphs with transition sentences, not fragments or bullet dumps. The article has a single restateable argument line a reader can follow page to page.
-- **Theme-driven design**: each page uses a real theme's exact color tokens (hex values), font stacks, and structural rules — loaded via Google Fonts `<link>`, not local font files. The agent picks the theme with the user (see Step 3).
-- **SVG diagrams, not AI illustrations**: when a concept earns a visual (a metaphor, a comparison, a process), the agent hand-writes an inline SVG using the theme's tokens. No image-generation API calls by default.
-- **Structural emphasis over inline bolding**: key judgments go in an `aside` block (labeled callout); comparisons go in a `compare` grid; quotes go in a `quote` block. Body prose stays unbolded; `strong` is reserved for the one load-bearing phrase per paragraph.
-
-## Where the outputs land — one folder per source
-
-Default is `<cwd>/<source-slug>/`. Inside:
-
-```
-<source-slug>/
-├── source.md           ← fetched/normalized source + translation note
-├── pages/
-│   ├── 01.html         ← cover
-│   ├── 02.html         ← chapter 01
-│   ├── ...
-│   └── NN.html         ← ending
-├── *.png                ← final 3:4 pages at 3x (01.png, 02.png, ...)
-├── caption.md          ← title/body/hashtag options
-└── render.mjs          ← 3x Playwright render script
-```
-
-## Environment check — resolve before generating
-
-Before Step 1, confirm:
-
-1. **playwright** resolves from the run directory: the render script uses `createRequire` to find it from cwd. Verify with `node -e "require('playwright')"` from the run dir. If missing, `npm i playwright`.
-2. **Internet access** for Google Fonts: the render script's Playwright waits on `networkidle` + `document.fonts.ready`, so Newsreader / Hanken Grotesk / IBM Plex etc. load from Google Fonts. If offline, fonts fall back to system serif/sans — still readable, less polished.
-3. **Source images** (if the user gave a screenshot/photo): the agent must be able to *see* the image to extract its content. If the image-analysis tool fails, ask the user to describe the image's text content verbatim — never skip it and guess.
+1. `NN.png` — the pages: cover + one chapter per page + ending, each 3240×4320 (3x of 1080×1440)
+2. `caption.md` — multiple title options (≤20 chars), body options, hashtags, sources
+3. `source/source.md` — the normalized source (from beautiful-article Phase 1)
+4. `plan/plan.md` — the editorial plan (from beautiful-article Phase 2)
+5. `pages/NN.html` — standalone 3:4 HTML per page (the pagination layer's output)
+6. `render.mjs` — the 3x Playwright render script
 
 ## The pipeline
 
-### Step 1 — Acquire the source content
+### Step 1–3 — Run beautiful-article's full editorial process
 
-The user gives a **link**, **local file**, **pasted text**, or **image**. Acquire by descending fallback:
+Do **exactly** what beautiful-article's SKILL.md (`SKILL.md.bak`) says for Phase 0 through Phase 4 Checkpoint 2:
 
-1. Built-in web fetch / web read tools (fastest). Try this first.
-2. For login-walled or JS-rendered pages, headless Playwright or browser MCP.
-3. Ask the user to paste the content or point to a local file.
+- **Phase 0–1**: Intake + source → `source/source.md` (read [`references/source-to-markdown.md`](references/source-to-markdown.md) for extraction rules). For images the agent can't analyze, ask the user to transcribe visible text — never skip.
+- **Phase 2**: Editorial planning → `plan/plan.md` (read [`references/plan-template.md`](references/plan-template.md), [`references/article-types.md`](references/article-types.md), [`references/theme-selection.md`](references/theme-selection.md)).
+- **Phase 3 Checkpoint 1**: Confirm article type / theme / width / assets / cover with the user — each decision as an independent question, never bundle.
+- **Phase 4**: First Spread — scaffold the workspace (`scripts/scaffold.sh`), write cover + first section, run First Spread Reviewer, hit Checkpoint 2.
 
-For **images** (screenshots, photos, diagrams): use an image-analysis tool to read the content. If the tool fails, **ask the user to transcribe the visible text** — images often carry load-bearing information (like a diagram's labels) that changes the whole article's accuracy. Never proceed on text alone if the source had an image you couldn't read.
+**Theme selection** (Phase 3): use beautiful-article's theme system — [`theme-profiles/index.json`](theme-profiles/index.json) + per-theme profiles. The agent recommends themes based on content type, confirms with the user. When rendering pages later, the exact CSS tokens come from the reacticle package (installed by scaffold.sh into `node_modules/reacticle/`) — use [`references/themes.md`](references/themes.md) as a quick hex/font lookup if reading the runtime CSS directly is inconvenient.
 
-Save normalized content to `source.md`. For non-Chinese sources, produce a **faithful, de-翻译腔 Chinese translation** — restructure to Chinese idiom, no word-for-word translation, no foreign word order or passive stacking. Keep the original text alongside (in a quote block or source note) for verbatim terms. Write the translation decisions into `source.md` (why a specific English phrase was translated a certain way).
+**Done when** Checkpoint 2 is passed (user accepts the first spread + development mode).
 
-**Done when** `source.md` exists and faithfully captures the source — **including any images**. If you skipped an image because you couldn't read it, you're not done.
+### Step 4 — Full article build, then paginate
 
-### Step 2 — Read deeply, extract the argument line → page plan
+After Checkpoint 2, build the complete article per beautiful-article Phase 5 — but **with one structural change**: each Section is sized to fit one 3:4 page (1080×1440 CSS canvas), not a flowing web column.
 
-Read `source.md`. Extract the **argument line** — the single thread a reader could restate in one sentence after finishing. This is an essay, not a card stack: pages flow into each other via transition sentences and content logic, not standalone points.
+**Pagination rules** (this skill's core addition):
 
-Identify the **cognitive anchors** — the core judgments, steps, structures, or turning points. Each anchor earns its own page (one chapter per page). Weight them as the source does: a one-line mention stays a one-line mention, not a full page.
+1. **One chapter per page.** Each `<Section>` from the article becomes one standalone HTML page. The chapter's content must fit within 1080×1440 without scrolling — if it overflows, split into two pages or trim.
+2. **Page structure** (standalone HTML, not React — the pages are rendered by Playwright, not served by Vite):
+   - **Cover page** (`pages/01.html`): the article's Cover design (from beautiful-article's cover system — read [`references/cover.md`](references/cover.md)), adapted to the 1080×1440 canvas. Includes: watermark, SVG hero visual, eyebrow, title, lead, meta row.
+   - **Chapter pages** (`pages/02.html` … `pages/NN-1.html`): header (chapter number + name + series) → h2 title → lead → prose paragraphs → SVG diagrams / compare tables / quote blocks / aside callouts (as beautiful-article's [`references/component-policy.md`](references/component-policy.md) and [`references/raw-policy.md`](references/raw-policy.md) dictate) → footer (page number).
+   - **Ending page** (`pages/NN.html`): summary + note + END stamp.
+3. **Theme tokens inlined**: each page's `<style>` hardcodes the chosen theme's CSS values (from [`references/themes.md`](references/themes.md) or the runtime `node_modules/reacticle/` CSS). Pages load fonts via Google Fonts `<link>`.
+4. **SVG diagrams by hand**: when a concept earns a visual, write inline SVG using the theme's tokens (read [`references/raw-policy.md`](references/raw-policy.md) for Raw rules). No AI image generation by default.
 
-Write the page plan to `source.md` (or a `shot-list.md`), one entry per page:
-- page number, position (cover / chapter NN / ending), chapter name
-- **core meaning** (one sentence)
-- **what visual it needs** (SVG diagram? compare table? quote block? aside? or pure prose?)
-- **structure type** (argument / before-after / process / layers / metaphor)
+**Convert from React to standalone HTML**: beautiful-article produces `.tsx` (React + reacticle). For pagination, translate each Section's content into plain HTML with the theme's tokens inlined. The structural components map directly:
+- `<Section>` → `<div class="body">` with header + footer
+- `<Aside>` → `<div class="aside">` with label + body
+- `<Quote>` → `<div class="quote">`
+- `<Raw>` → inline SVG/HTML
+- Prose paragraphs → `<p>` tags
 
-Then **STOP and get the user to confirm the page plan.** This gate is mandatory — a wrong skeleton wastes rendering time on every page.
+**Done when** every chapter exists as a standalone `pages/NN.html` that fits in 1080×1440.
 
-**Done when** the page plan exists and the user has confirmed (or adjusted it).
+### Step 5 — Render all pages at 3x
 
-### Step 3 — Theme selection: render multiple covers, let the user pick
+```bash
+node render.mjs pages/NN.html NN.png
+```
 
-The theme determines the entire visual DNA — colors, fonts, structural feel. **Don't pick for the user silently.** Instead:
+The render script uses Playwright with `deviceScaleFactor: 3` — CSS canvas stays 1080×1440, PNG output is 3240×4320. This gives serif strokes enough pixels to render sharply on mobile screens.
 
-1. **Recommend 3-5 themes** based on the content type (see `references/themes.md` for the full list with hex tokens and font stacks). State *why* each fits — e.g. "press: 衬线书卷气，适合观点/评论" / "freddie: 无衬线+明黄，亲和力强" / "shannon: 暗底工程感，吸睛".
-2. **Render a cover thumbnail for each recommended theme** — same title, same lead, different theme tokens. This is zero-cost (pure HTML, no AI image generation). Use the `render.mjs` script at 1x for speed (thumbnails, not final).
-3. **Show the user the thumbnails** and let them pick. Honor their choice even if it contradicts your recommendation.
+Verify each page: no overflow past 1440px, no text/footer overlap, fonts loaded (not fallback), SVG integrity. Fix and re-render until clean.
 
-Each theme is defined by its **exact CSS tokens** — background, foreground, accent, border, surface colors as hex values; font stacks (Google Fonts); weight limits; radius/shadow rules. The agent hardcodes these into each page's `<style>`. See `references/themes.md` for the token tables.
+**Done when** every page is a clean 3x PNG.
 
-**Done when** the user picks a theme.
+### Step 6 — Adjust loop
 
-### Step 4 — Write and render all pages
+Show the user the full set. Adjust:
+- **Text/layout** (HTML) — free, instant.
+- **Theme switch** — re-render with different tokens.
 
-The page plan and theme are confirmed. Now write each page as standalone HTML and render at 3x.
+Scope discipline: every change stays inside the user's ask.
 
-For each page, in order:
+**Done when** the user approves.
 
-1. **Write the HTML** (`pages/NN.html`): a complete standalone document with the theme's tokens inlined in `<style>`, Google Fonts `<link>`, and the page's content. Use the structural components:
-   - **Cover**: watermark (big low-opacity background text) + SVG hero visual + eyebrow tag + title + lead + meta row. The cover's visual hero follows **beautiful-article's cover design system** — see [`references/cover.md`](references/cover.md) for the 5 composition templates (A上字下图 / B大字盖图 / C分屏 / D拼贴 / E极简框) and the 5 hard constraints. The AI picks a composition template, invents a content-specific visual metaphor (the SVG), and layers the text — this is what produces the "出版物封面" quality, not a generic text-only cover.
-   - **Chapter pages**: header (big chapter number + name + series) + h2 title + lead + prose paragraphs + SVG diagrams / compare tables / quote blocks / aside callouts as the content demands + footer (page number)
-   - **Ending**: watermark + summary prose + note + END stamp
-2. **Write the SVG diagrams** by hand, using the theme's color tokens. A diagram earns its place when it explains a concept faster than prose (a metaphor, a process, a comparison). Not every page needs one — pure prose is the default.
-3. **Render at 3x**:
-   ```bash
-   node render.mjs pages/NN.html NN.png
-   ```
-4. **Verify** the rendered page: check for overflow (content past the 1440px canvas), overlap (text touching footer), font loading (serifs rendering, not fallback), and SVG integrity. Fix and re-render until clean.
-
-The `render.mjs` script uses Playwright with `deviceScaleFactor: 3` — the CSS canvas stays 1080×1440, but the PNG is 3240×4320, giving serif strokes enough pixels to render sharply on mobile.
-
-**Done when** every page exists as a 3x PNG and has no overflow, overlap, or rendering issues.
-
-### Step 5 — Adjust loop
-
-Show the user the full set. **Ask what to adjust.** Adjustments:
-
-- **Text/layout** (HTML) — free, instant. Wording, emphasis, composition, SVG tweaks.
-- **Theme switch** — re-render all pages with different tokens. Free but full re-render.
-
-**Scope discipline**: every change stays inside the user's ask. A format report means fix the format — no rewriting sentences, no swapping metaphors, no adjusting unrelated pages.
-
-**Done when** the user says the set is good or makes no more changes.
-
-### Step 6 — Write the caption
+### Step 7 — Caption
 
 Write `caption.md`:
+- **Multiple titles** (≤20 chars, verified by script, none duplicating the cover text).
+- **Multiple body options** (plain text, no markdown).
+- **Hashtags.**
+- **Sources block** for a pinned comment.
 
-- **Multiple title options** (≤20 chars each for Xiaohongshu), **different styles** (平实点题型 / 数字钩子型 / 痛点共鸣型). **None may duplicate the cover's title text.** Count characters with a script — agent eyeballing is unreliable, especially with English tokens (`spec` is 4 chars, `SDD` is 3).
-- **Multiple body options**, each faithfully summarizing the content in plain text (no markdown — Xiaohongshu renders `**` and backticks literally).
-- **A hashtag set.**
-- **A sources block** listing every link the original source cited, for a pinned comment.
-
-**Done when** `caption.md` exists with verified titles and multiple body options.
+**Done when** caption.md exists with verified titles and body options.
 
 ## Writing rules
 
-These apply to every word on every page.
+Follow beautiful-article's writing standards — read its SKILL.md.bak "成功标准" and [`references/section-build.md`](references/section-build.md), [`references/component-policy.md`](references/component-policy.md). In summary:
 
-1. **Faithful to the source.** Only express what the source says. Weight follows the source.
-2. **De-翻译腔.** For English sources: restructure to Chinese idiom, no word-for-word translation, no foreign word order, no passive stacking. Translate proper nouns correctly (查官方中译); keep original terms alongside (原文 prompt/code verbatim in a code/quote block).
-3. **Prose-first, not card-fragments.** Body text is full paragraphs with transition sentences. The article has a single argument line. No standalone bullet-point cards.
-4. **Structural emphasis.** Key judgments → `aside` callout. Comparisons → `compare` grid. Quotes → `quote` block. Body prose stays unbolded; `strong` for the one load-bearing phrase per paragraph max.
-5. **No AI tone.** Write like an editor wrote it. No 首先/其次/综上所述, no 赋能/抓手/闭环, no 整理自/如图所示. Read each paragraph back — if it sounds like AI, rewrite.
-6. **SVG diagrams earn their place.** Only when a concept is faster shown than told. Hand-authored, theme-token-colored, never decorative.
+1. **Prose-first**: full subject-verb-object paragraphs with transition sentences. Single restateable argument line.
+2. **De-翻译腔**: restructure to Chinese idiom for English sources.
+3. **No AI tone**: no 首先/其次/综上所述, no 赋能/抓手/闭环.
+4. **Structural emphasis**: aside/quote/compare blocks, not inline bolding.
+5. **SVG earns its place**: only when faster shown than told.
 
-## Platform notes
+## File map
 
-- Images are 3:4 vertical (3240×4320 at 3x). Works for Xiaohongshu and similar.
-- For Xiaohongshu: titles ≤20 chars, different from the cover text.
+```
+paged-article-skill/
+├── SKILL.md                  ← this file (orchestration + pagination layer)
+├── SKILL.md.bak              ← beautiful-article's original SKILL.md (Phase 0–8 reference)
+├── render.mjs                ← 3x Playwright render script
+├── references/
+│   ├── themes.md             ← runtime CSS token lookup (hex + fonts per theme)
+│   ├── cover.md              ← cover design system (from beautiful-article)
+│   ├── component-policy.md   ← reacticle component protocol
+│   ├── raw-policy.md         ← Raw layer rules
+│   ├── ... (all beautiful-article references)
+│   └── article-types/        ← per-genre authoring guides
+├── theme-profiles/           ← 11 theme authoring profiles + index.json
+├── scripts/                  ← scaffold.sh, html-to-pdf.sh, source-to-markdown scripts
+└── assets/scaffold-template/ ← Vite+React+TS workspace template
+```
