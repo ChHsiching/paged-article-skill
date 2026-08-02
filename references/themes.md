@@ -1,19 +1,8 @@
-# themes.md — 主题 token 速查表
+# themes.md — 主题 token 速查表（derived snapshot）
 
-每个主题的**精确 CSS token**（hex 值 + 字体栈 + Google Fonts 链接）。agent 把这些硬编码进每页的 `<style>`。颜色来自 reacticle 组件库的运行时 CSS（`src/theme/themes/<id>/<id>.css`），是真实值不是近似。
+每个主题的 CSS token（hex 值 + 字体栈 + Google Fonts 链接），用于渲染分页时硬编码进每页的 `<style>`。
 
-## 主题选择指南
-
-按内容类型推荐（推荐 3-5 个让用户挑，渲染封面缩略图对比）：
-
-| 内容类型 | 首选主题 | 理由 |
-|---|---|---|
-| 观点 / 评论 / 论证 | **press** / bodoni | 书卷气/大报感，衬线有分量 |
-| 教程 / 上手指南 | **freddie** / andy | 亲和力强，无衬线清晰 |
-| 技术规格 / 文档 | **vignelli** | 冷中性，强结构可扫读 |
-| 系统设计 / 故障复盘 | **shannon** | 暗底工程现场，吸睛 |
-| 产品介绍 / 概念解释 | **bayer** / freddie | 响亮/友好 |
-| 文化 / 设计写作 | **sottsass** | 叛逆好玩，撞色 |
+**来源**：这些值派生自 reacticle 组件库的运行时 CSS（`node_modules/reacticle/src/theme/themes/<id>/<id>.css`）。主题选择和设计理念看 [`../theme-profiles/index.json`](../theme-profiles/index.json) + 各 profile——那是权威来源；本文件只是渲染时的 token 速查。如果 reacticle 更新了主题值，以运行时 CSS 为准。
 
 字细问题：衬线主题（press/bodoni/tufte/knuth）笔画有粗细变化，在 1x 下发虚——但 3x 渲染下不是问题。无衬线主题（vignelli/freddie/shannon/bayer/sottsass/andy）笔画均匀，天然清晰。
 
