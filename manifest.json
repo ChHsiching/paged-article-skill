@@ -1,9 +1,9 @@
 {
-  "name": "beautiful-article",
+  "name": "paged-article",
   "version": "0.1.0",
-  "category": "Editorial · Any source → beautiful article",
-  "description": "Edit and design any source material (URL / PDF / DOCX / Markdown / plain text / screenshots / pasted notes) into a beautiful, share-ready article. Built on the reacticle component protocol with a theme-constrained Raw layer; runs a small source -> plan -> double-confirmation -> build -> final review -> repair harness, defaulting to 100% information retention long-form articles.",
-  "homepage": "https://github.com/ConardLi/garden-skills/tree/main/skills/beautiful-article",
+  "category": "Editorial · Any source → 3:4 paged Xiaohongshu article",
+  "description": "Turn any source (URL / file / pasted text / image) into a set of 3:4 vertical pages for Xiaohongshu — a beautiful-article-style essay, split one-chapter-per-page, each rendered as standalone HTML at 3x DPI. Embeds beautiful-article in full and adds a pagination + render layer.",
+  "homepage": "https://github.com/ChHsiching/paged-article-skill",
   "compat": [
     "claude-code",
     "claude-ai",
